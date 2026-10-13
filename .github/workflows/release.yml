@@ -1,0 +1,128 @@
+name: Release
+
+# Builds native, self-contained desktop apps (Java runtime bundled) for macOS, Windows and Linux,
+# and attaches them to a GitHub release when a tag like v0.2.0 is pushed.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+# Least privilege: jobs only get write access where they need it.
+permissions:
+  contents: read
+
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest      # Apple Silicon
+            label: macos-arm64
+            installer: dmg
+          - os: windows-latest
+            label: windows-x64
+            installer: msi
+          - os: ubuntu-latest
+            label: linux-x64
+            installer: deb
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+
+      - name: Version
+        id: v
+        run: |
+          if [[ "$GITHUB_REF_NAME" == v* ]]; then v="${GITHUB_REF_NAME#v}"; else v="$(awk '/<artifactId>supermarket-manager-parent<\/artifactId>/ {getline; gsub(/.*<version>|<\/version>.*/, ""); print; exit}' pom.xml)"; fi
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+
+      - name: Build (tests on Linux only)
+        run: |
+          if [ "${{ runner.os }}" = Linux ]; then mvn -B verify; else mvn -B -pl app -am package -DskipTests; fi
+
+      - name: Portable app image
+        run: |
+          packaging/jpackage.sh app-image "${{ steps.v.outputs.version }}"
+          mkdir -p out
+          case "${{ runner.os }}" in
+            macOS)   ditto -c -k --keepParent "dist/Supermarket Manager.app" "out/SupermarketManager-${{ steps.v.outputs.version }}-${{ matrix.label }}.zip" ;;
+            Windows) (cd dist && 7z a -tzip "../out/SupermarketManager-${{ steps.v.outputs.version }}-${{ matrix.label }}.zip" "Supermarket Manager") ;;
+            Linux)   tar -C dist -czf "out/SupermarketManager-${{ steps.v.outputs.version }}-${{ matrix.label }}.tar.gz" "Supermarket Manager" ;;
+          esac
+          rm -rf dist
+
+      - name: Install WiX (Windows installer toolchain)
+        if: runner.os == 'Windows'
+        continue-on-error: true
+        run: |
+          dotnet tool install --global wix --version 5.0.2
+          wix extension add -g WixToolset.UI.wixext/5.0.2 WixToolset.Util.wixext/5.0.2
+
+      - name: Native installer
+        continue-on-error: ${{ runner.os == 'Windows' }}
+        run: |
+          packaging/jpackage.sh "${{ matrix.installer }}" "${{ steps.v.outputs.version }}"
+          for f in dist/*.${{ matrix.installer }}; do
+            mv "$f" "out/SupermarketManager-${{ steps.v.outputs.version }}-${{ matrix.label }}.${{ matrix.installer }}"
+          done
+
+      - name: Cross-platform jar (needs Java 25)
+        if: runner.os == 'Linux'
+        run: cp app/target/supermarket-manager.jar "out/supermarket-manager-${{ steps.v.outputs.version }}.jar"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ matrix.label }}
+          path: out/*
+
+  release:
+    needs: package
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write       # create the release
+      id-token: write       # sign provenance with Sigstore (keyless)
+      attestations: write   # store provenance attestations
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          path: artifacts
+          merge-multiple: true
+      - name: Checksums
+        run: cd artifacts && sha256sum * > SHA256SUMS && cat SHA256SUMS
+      - name: Build provenance (proves each file was built by this workflow from this commit)
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: artifacts/*
+      - uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          files: artifacts/*
+          generate_release_notes: true
+          body: |
+            Desktop builds with a bundled Java runtime - no Java install needed.
+
+            - **macOS (Apple Silicon)**: `.dmg` or `.zip`. The app is not notarized: on first launch right-click → Open,
+              or run `xattr -dr com.apple.quarantine "/Applications/Supermarket Manager.app"`.
+            - **Windows**: `.msi` installer or portable `.zip` (SmartScreen may warn: More info → Run anyway).
+            - **Linux**: `.deb` or portable `.tar.gz`.
+            - **Any OS with Java 25**: `java -jar supermarket-manager-<version>.jar`.
+
+            Free and open source under the MIT License.
+
+            **Verify your download** (the builds are not code-signed):
+            - Checksum: compare `sha256sum <file>` (macOS: `shasum -a 256 <file>`) with `SHA256SUMS`.
+            - Provenance: `gh attestation verify <file> --repo ${{ github.repository }}` proves the file was built by this
+              repository's release workflow from the tagged commit.
+
+            The app runs a local server on http://localhost:8765 and opens it in your browser; agents connect over MCP at
+            http://localhost:8765/mcp.

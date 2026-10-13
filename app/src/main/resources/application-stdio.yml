@@ -1,0 +1,12 @@
+# MCP over stdin/stdout: nothing but protocol messages may be written to stdout.
+spring:
+  main:
+    banner-mode: off
+    web-application-type: none
+  ai:
+    mcp:
+      server:
+        stdio: true
+logging:
+  threshold:
+    console: OFF

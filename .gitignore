@@ -1,0 +1,13 @@
+target/
+dist/
+node_modules/
+frontend/dist/
+.idea/
+*.iml
+.DS_Store
+*.db
+*.db-shm
+*.db-wal
+*.log
+legacy/pantry-planner-ts/node_modules/
+legacy/pantry-planner-ts/dist/

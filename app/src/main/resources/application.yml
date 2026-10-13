@@ -1,0 +1,41 @@
+sm:
+  version: "@project.version@"
+  data-dir: ${SM_DATA_DIR:${user.home}/.supermarket-manager}
+
+server:
+  address: 127.0.0.1
+  port: ${SM_PORT:8765}
+
+spring:
+  application:
+    name: supermarket-manager
+  datasource:
+    url: jdbc:sqlite:${sm.data-dir}/supermarket-manager.db?foreign_keys=true&busy_timeout=10000&journal_mode=WAL
+    hikari:
+      maximum-pool-size: 4
+  flyway:
+    locations: classpath:db/migration
+    out-of-order: true
+  jackson:
+    default-property-inclusion: non_null
+    deserialization:
+      # Jackson 3 rejects absent/null primitives by default; API clients may omit optional flags and numbers.
+      fail-on-null-for-primitives: false
+  ai:
+    mcp:
+      server:
+        name: supermarket-manager
+        version: "@project.version@"
+        protocol: streamable
+        annotation-scanner:
+          enabled: false
+        instructions: >
+          Weekly grocery planning for Greece. Modules: pantry (targets over time, stock, missing delta),
+          rules (deny/allow, price/pack limits, mix policy), prices (PosoKanei, demo), supermarkets (AB live search),
+          pipeline (chain any of them). Start with pantry_overview and pipeline_stages. Tools never place orders.
+
+logging:
+  file:
+    name: ${sm.data-dir}/supermarket-manager.log
+  level:
+    root: info

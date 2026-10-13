@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "settings": {
+    "maxRetailers": 2,
+    "excludeRetailers": [],
+    "retailers": {},
+    "maxPriceAgeDays": 7,
+    "packRoundingTolerance": 0.1,
+    "searchPages": 1
+  },
+  "items": [
+    {
+      "id": "yoghurt",
+      "name": "Strained yoghurt",
+      "query": "γιαούρτι στραγγιστό",
+      "unit": "kg",
+      "expected": 2,
+      "actual": 0.5,
+      "rules": {
+        "allow": ["ΔΕΛΤΑ", "ΟΛΥΜΠΟΣ", "ΦΑΓΕ"],
+        "deny": ["ΒΙΟ"],
+        "maxUnitPrice": 5,
+        "allowPrivateLabel": true
+      },
+      "paused": false
+    },
+    {
+      "id": "milk",
+      "name": "Fresh milk",
+      "query": "γάλα φρέσκο",
+      "unit": "l",
+      "expected": 4,
+      "actual": 1,
+      "rules": { "allow": [], "deny": [], "maxUnitPrice": 2, "allowPrivateLabel": true },
+      "paused": false
+    },
+    {
+      "id": "eggs",
+      "name": "Eggs",
+      "query": "αυγά",
+      "unit": "each",
+      "expected": 12,
+      "actual": 2,
+      "rules": { "allow": [], "deny": [], "allowPrivateLabel": true },
+      "paused": false
+    },
+    {
+      "id": "feta",
+      "name": "Feta PDO",
+      "query": "φέτα",
+      "unit": "kg",
+      "expected": 0.4,
+      "actual": 0,
+      "rules": { "allow": [], "deny": [], "maxUnitPrice": 16, "allowPrivateLabel": true },
+      "paused": false
+    }
+  ]
+}

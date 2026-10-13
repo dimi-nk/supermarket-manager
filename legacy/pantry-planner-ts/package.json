@@ -1,0 +1,33 @@
+{
+  "name": "pantry-planner",
+  "version": "0.1.0",
+  "description": "Recurring pantry list + rule-based supermarket price optimizer for Greek retailers",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --import tsx --test test/*.test.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "cli": "tsx src/cli.ts",
+    "mcp": "tsx src/mcp.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  },
+  "bin": {
+    "pantry": "dist/cli.js",
+    "pantry-mcp": "dist/mcp.js"
+  }
+}

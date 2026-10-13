@@ -1,0 +1,9 @@
+Supermarket Manager
+
+Copyright (c) 2026 Dimitrios Klimis. Licensed under the MIT License (see LICENSE).
+
+The PosoKanei request/response contract was derived from posokanei-mcp
+(https://github.com/charistas/posokanei-mcp), MIT License.
+
+PosoKanei (posokanei.gov.gr) and the AB Vassilopoulos e-shop API are third-party services used unofficially;
+they are not affiliated with this project. Demo prices bundled with the app are synthetic.

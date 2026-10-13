@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.pantry-cache/
+last-plan.json
+pantry.json
+*.tmp-*
