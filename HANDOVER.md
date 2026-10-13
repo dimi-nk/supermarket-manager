@@ -69,7 +69,8 @@ packaging                 jpackage.sh, MakeIcons.java, icons/
 
 ## Next steps (suggested)
 
-1. Push to GitHub, run CI, then tag `v0.1.0` to exercise the release workflow and fix whatever the runners reveal.
+1. Released as v1.0.0 (pushed to github.com/dimi-nk/supermarket-manager). macOS bundles reject versions starting with 0,
+   so versions are >= 1.0.0; jpackage.sh fails early otherwise. Check the release assets on each new tag.
 2. Verify PosoKanei from Greece and replace guessed retailer ids in docs/examples with the real ones.
 3. Pick features from docs/SIMILAR-PROJECTS.md (barcode + Open Food Facts, consumption-rate targets, price history, budget).
 4. More adapters (Sklavenitis, My Market). Cart filling only on explicit request, with a confirmation step.

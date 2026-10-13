@@ -11,7 +11,7 @@ Release builds are not code-signed yet, so macOS and Windows show a warning on f
 - every file has a GitHub **build provenance attestation** (Sigstore), so you can verify it was built by this
   repository's release workflow from the tagged commit:
   ```bash
-  gh attestation verify SupermarketManager-0.1.0-macos-arm64.dmg --repo <owner>/supermarket-manager
+  gh attestation verify SupermarketManager-1.0.0-macos-arm64.dmg --repo <owner>/supermarket-manager
   ```
 Only download from this repository's Releases page.
 

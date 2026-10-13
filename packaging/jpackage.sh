@@ -8,6 +8,10 @@ cd "$(dirname "$0")/.."
 
 TYPE="${1:-app-image}"
 VERSION="${2:-$(awk '/<artifactId>supermarket-manager-parent<\/artifactId>/ {getline; gsub(/.*<version>|<\/version>.*/, ""); print; exit}' pom.xml)}"
+[[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]] || { echo "Version '$VERSION' must be 1-3 numbers, e.g. 1.2.0" >&2; exit 1; }
+if [ "$(uname -s)" = Darwin ] && [ "${VERSION%%.*}" -eq 0 ]; then
+  echo "macOS bundles need a version starting at 1 (got $VERSION)" >&2; exit 1
+fi
 NAME="Supermarket Manager"
 JAR=app/target/supermarket-manager.jar
 [ -f "$JAR" ] || { echo "Missing $JAR - build it first: mvn -pl app -am package -DskipTests" >&2; exit 1; }
